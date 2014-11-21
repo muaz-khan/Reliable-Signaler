@@ -14,9 +14,9 @@ node ./node_modules/rtcmulticonnection-client/server.js
 
 Now open localhost port:`8080`.
 
-This demo uses:
+Source code of this demo is available here:
 
-* https://www.npmjs.org/package/reliable-signaler
+* https://github.com/muaz-khan/Reliable-Signaler/tree/master/rtcmulticonnection-client
 
 ## License
 

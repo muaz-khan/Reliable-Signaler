@@ -13,13 +13,16 @@ npm install reliable-signaler
 # Demos
 
 * https://www.npmjs.org/package/rtcmulticonnection-client
+* https://www.npmjs.org/package/datachannel-client
 
 ```
-# install
+# install rtcmulticonnection-client
 npm install rtcmulticonnection-client
-
-# run
 node ./node_modules/rtcmulticonnection-client/server.js
+
+# or intall datachannel-client
+npm install datachannel-client
+node ./node_modules/datachannel-client/server.js
 ```
 
 Now open localhost port:`8080`.
@@ -33,6 +36,8 @@ require('reliable-signaler')(httpServer || expressServer || portNumber);
 ```
 
 # 2nd Step: Browser-side code
+
+Note: Below code targets: [rtcmulticonnection-client](https://www.npmjs.org/package/rtcmulticonnection-client)
 
 To use it in the browser: (required)
 
