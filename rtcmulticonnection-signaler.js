@@ -1,13 +1,13 @@
-// <script src="/reliable-signaler/signaler.js"></script>
+// <script src="/reliable-signaler/rtcmulticonnection-signaler.js"></script>
 
-function initReliableSignaler(channel, socketURL) {
+function initReliableSignaler(connection, socketURL) {
     var socket;
     
-    if (!channel) throw 'DataChannel instance is required.';
+    if (!connection) throw 'RTCMultiConnection instance is required.';
 
     function initSocket() {
-        if (socket && channel && channel.isInitiator && channel.roomDescription) {
-            socket.emit('keep-session', channel.roomDescription);
+        if (socket && connection && connection.isInitiator && connection.sessionid) {
+            socket.emit('keep-session', connection.sessionid);
         }
 
         socket = io.connect(socketURL || '/');
@@ -18,7 +18,7 @@ function initReliableSignaler(channel, socketURL) {
             }
         });
         socket.on('message', function(data) {
-            //if (data.sender == channel.userid) return;
+            if (data.sender == connection.userid) return;
             if (onMessageCallbacks[data.channel]) {
                 onMessageCallbacks[data.channel](data.message);
             };
@@ -38,14 +38,14 @@ function initReliableSignaler(channel, socketURL) {
     var onMessageCallbacks = {};
 
     // using socket.io for signaling
-    channel.openSignalingChannel = function(config) {
-        var channel = config.channel || this.channel || 'default-channel';
+    connection.openSignalingChannel = function(config) {
+        var channel = config.channel || this.channel;
         onMessageCallbacks[channel] = config.onmessage;
-        if(config.onopen) setTimeout(config.onopen, 1);
+        if (config.onopen) setTimeout(config.onopen, 1000);
         return {
             send: function(message) {
                 socket.emit('message', {
-                    sender: channel.userid,
+                    sender: connection.userid,
                     channel: channel,
                     message: message
                 });
@@ -65,7 +65,7 @@ function initReliableSignaler(channel, socketURL) {
 
     function onLineOffLineHandler() {
         if (!navigator.onLine) {
-            console.warn('Internet channel seems disconnected.');
+            console.warn('Internet connection seems disconnected.');
             return;
         }
 
@@ -77,25 +77,11 @@ function initReliableSignaler(channel, socketURL) {
 
     return {
         socket: socket,
-        openNewSession: function(roomid, successCallback) {
-            var roomDescription =  {
-                roomToken: roomid,
-                broadcaster: roomid,
-                sessionid: roomid
-            };
-            
-            // for reusability on failures & reconnect
-            channel.roomDescription = roomDescription;
-            
-            socket.emit('keep-in-server', roomDescription, successCallback || function() {});
+        createNewRoomOnServer: function(sessionid, callback) {
+            socket.emit('keep-in-server', sessionid || connection.sessionid, callback || function() {});
         },
-        joinSession: function(sessionid, callback) {
-            socket.emit('get-session-info', sessionid, function(roomDescription) {
-                callback({
-                    id: roomDescription.roomToken,
-                    owner: roomDescription.broadcaster
-                });
-            });
+        getRoomFromServer: function(sessionid, callback) {
+            socket.emit('get-session-info', sessionid, callback);
         }
     };
 }

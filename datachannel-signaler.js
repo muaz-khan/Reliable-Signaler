@@ -1,17 +1,16 @@
-// <script src="/reliable-signaler/rmc-signaler.js"></script>
+// <script src="/reliable-signaler/datachannel-signaler.js"></script>
 
-function initRMCSignaler(config) {
+function initReliableSignaler(channel, socketURL) {
     var socket;
-    var connection = typeof config == window.RTCMultiConnection || config.connection || config;
-
-    if (!connection) throw 'RTCMultiConnection instance is required.';
+    
+    if (!channel) throw 'DataChannel instance is required.';
 
     function initSocket() {
-        if (socket && connection && connection.isInitiator) {
-            socket.emit('keep-session', connection.sessionDescription);
+        if (socket && channel && channel.isInitiator && channel.roomid) {
+            socket.emit('keep-session', channel.roomid);
         }
 
-        socket = io.connect(config.socketURL || '/');
+        socket = io.connect(socketURL || '/');
         socket.on('connect', function() {
             // if socket.io was disconnected out of network issues
             if (socket.isHavingError) {
@@ -19,7 +18,7 @@ function initRMCSignaler(config) {
             }
         });
         socket.on('message', function(data) {
-            if (data.sender == connection.userid) return;
+            //if (data.sender == channel.userid) return;
             if (onMessageCallbacks[data.channel]) {
                 onMessageCallbacks[data.channel](data.message);
             };
@@ -39,14 +38,14 @@ function initRMCSignaler(config) {
     var onMessageCallbacks = {};
 
     // using socket.io for signaling
-    connection.openSignalingChannel = function(config) {
-        var channel = config.channel || this.channel;
+    channel.openSignalingChannel = function(config) {
+        var channel = config.channel || this.channel || 'default-channel';
         onMessageCallbacks[channel] = config.onmessage;
-        if (config.onopen) setTimeout(config.onopen, 1000);
+        if(config.onopen) setTimeout(config.onopen, 1);
         return {
             send: function(message) {
                 socket.emit('message', {
-                    sender: connection.userid,
+                    sender: channel.userid,
                     channel: channel,
                     message: message
                 });
@@ -66,7 +65,7 @@ function initRMCSignaler(config) {
 
     function onLineOffLineHandler() {
         if (!navigator.onLine) {
-            console.warn('Internet connection seems disconnected.');
+            console.warn('Internet channel seems disconnected.');
             return;
         }
 
@@ -78,11 +77,14 @@ function initRMCSignaler(config) {
 
     return {
         socket: socket,
-        openNewSession: function(sessionDescription) {
-            socket.emit('keep-in-server', sessionDescription || connection.sessionDescription);
+        createNewRoomOnServer: function(roomid, successCallback) {
+            // for reusability on failures & reconnect
+            channel.roomid = roomid;
+            
+            socket.emit('keep-in-server', roomid || channel.channel, successCallback || function() {});
         },
-        joinSession: function(sessionid, callback) {
-            socket.emit('get-session-info', sessionid, callback);
+        getRoomFromServer: function(roomid, callback) {
+            socket.emit('get-session-info', roomid, callback);
         }
     };
 }
