@@ -23,6 +23,23 @@ npm install reliable-signaler
 4. Invoke `createNewRoomOnServer` method for room-moderator.
 5. Invoke `getRoomFromServer` method from room-participants (multiple participants).
 
+# Demos
+
+* [![npm](https://img.shields.io/npm/v/rtcmulticonnection-client.svg)](https://npmjs.org/package/rtcmulticonnection-client) [![downloads](https://img.shields.io/npm/dm/rtcmulticonnection-client.svg)](https://npmjs.org/package/rtcmulticonnection-client)
+* [![npm](https://img.shields.io/npm/v/datachannel-client.svg)](https://npmjs.org/package/datachannel-client) [![downloads](https://img.shields.io/npm/dm/datachannel-client.svg)](https://npmjs.org/package/datachannel-client)
+
+```
+# install rtcmulticonnection-client
+npm install rtcmulticonnection-client
+node ./node_modules/rtcmulticonnection-client/server.js
+
+# or intall datachannel-client
+npm install datachannel-client
+node ./node_modules/datachannel-client/server.js
+```
+
+Now open localhost port:`8080`.
+
 # 1st Step: Node.js Server
 
 To use it in your node.js code: (required)
