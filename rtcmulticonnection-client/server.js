@@ -45,6 +45,4 @@ var app = require('http').createServer(function (request, response) {
 app.listen(8080);
 
 // npm install reliable-signaler
-require('reliable-signaler')(app, {
-    path: '/reliable-signaler/rtcmulticonnection-signaler.js'
-});
+require('reliable-signaler')(app);

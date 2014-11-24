@@ -1,13 +1,13 @@
-// <script src="/reliable-signaler/datachannel-signaler.js"></script>
+// <script src="/reliable-signaler/signaler.js"></script>
 
-function initReliableSignaler(channel, socketURL) {
+function initReliableSignaler(connection, socketURL) {
     var socket;
     
-    if (!channel) throw 'DataChannel instance is required.';
+    if (!connection) throw '"connection" argument is required.';
 
     function initSocket() {
-        if (socket && channel && channel.isInitiator && channel.roomid) {
-            socket.emit('keep-session', channel.roomid);
+        if (socket && connection && connection.isInitiator && connection.roomid) {
+            socket.emit('keep-session', connection.roomid);
         }
 
         socket = io.connect(socketURL || '/');
@@ -18,7 +18,6 @@ function initReliableSignaler(channel, socketURL) {
             }
         });
         socket.on('message', function(data) {
-            //if (data.sender == channel.userid) return;
             if (onMessageCallbacks[data.channel]) {
                 onMessageCallbacks[data.channel](data.message);
             };
@@ -38,14 +37,14 @@ function initReliableSignaler(channel, socketURL) {
     var onMessageCallbacks = {};
 
     // using socket.io for signaling
-    channel.openSignalingChannel = function(config) {
+    connection.openSignalingChannel = function(config) {
         var channel = config.channel || this.channel || 'default-channel';
         onMessageCallbacks[channel] = config.onmessage;
         if(config.onopen) setTimeout(config.onopen, 1);
         return {
             send: function(message) {
                 socket.emit('message', {
-                    sender: channel.userid,
+                    sender: connection.userid,
                     channel: channel,
                     message: message
                 });
@@ -74,16 +73,32 @@ function initReliableSignaler(channel, socketURL) {
             initSocket();
         }
     }
+    
+    function getRandomString() {
+        if (window.crypto && window.crypto.getRandomValues && navigator.userAgent.indexOf('Safari') === -1) {
+            var a = window.crypto.getRandomValues(new Uint32Array(3)),
+                token = '';
+            for (var i = 0, l = a.length; i < l; i++) {
+                token += a[i].toString(36);
+            }
+            return token;
+        } else {
+            return (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '');
+        }
+    }
 
     return {
         socket: socket,
         createNewRoomOnServer: function(roomid, successCallback) {
             // for reusability on failures & reconnect
-            channel.roomid = roomid;
+            connection.roomid = roomid;
+            connection.isInitiator = true;
+            connection.userid = connection.userid || getRandomString();
             
-            socket.emit('keep-in-server', roomid || channel.channel, successCallback || function() {});
+            socket.emit('keep-in-server', roomid || connection.channel, successCallback || function() {});
         },
         getRoomFromServer: function(roomid, callback) {
+            connection.userid = connection.userid || getRandomString();
             socket.emit('get-session-info', roomid, callback);
         }
     };

@@ -18,15 +18,16 @@ npm install reliable-signaler
 # How to use?
 
 1. In your Node.js server, invoke `require('reliable-signaler')` and pass HTTP-Server object.
-2. In your HTML file, link this script: `/reliable-signaler/rtcmulticonnection-signaler.js`
+2. In your HTML file, link this script: `/reliable-signaler/signaler.js`
 3. In your `<script>` tag, invoke `initReliableSignaler` constructor.
 4. Invoke `createNewRoomOnServer` method for room-moderator.
 5. Invoke `getRoomFromServer` method from room-participants (multiple participants).
 
 # Demos
 
-* [![npm](https://img.shields.io/npm/v/rtcmulticonnection-client.svg)](https://npmjs.org/package/rtcmulticonnection-client) [![downloads](https://img.shields.io/npm/dm/rtcmulticonnection-client.svg)](https://npmjs.org/package/rtcmulticonnection-client)
-* [![npm](https://img.shields.io/npm/v/datachannel-client.svg)](https://npmjs.org/package/datachannel-client) [![downloads](https://img.shields.io/npm/dm/datachannel-client.svg)](https://npmjs.org/package/datachannel-client)
+* `rtcmulticonnection-client`: [![npm](https://img.shields.io/npm/v/rtcmulticonnection-client.svg)](https://npmjs.org/package/rtcmulticonnection-client) [![downloads](https://img.shields.io/npm/dm/rtcmulticonnection-client.svg)](https://npmjs.org/package/rtcmulticonnection-client)
+* `datachannel-client`: [![npm](https://img.shields.io/npm/v/datachannel-client.svg)](https://npmjs.org/package/datachannel-client) [![downloads](https://img.shields.io/npm/dm/datachannel-client.svg)](https://npmjs.org/package/datachannel-client)
+* `videoconferencing-client`: [![npm](https://img.shields.io/npm/v/videoconferencing-client.svg)](https://npmjs.org/package/videoconferencing-client) [![downloads](https://img.shields.io/npm/dm/videoconferencing-client.svg)](https://npmjs.org/package/videoconferencing-client)
 
 ```
 # install rtcmulticonnection-client
@@ -36,11 +37,15 @@ node ./node_modules/rtcmulticonnection-client/server.js
 # or intall datachannel-client
 npm install datachannel-client
 node ./node_modules/datachannel-client/server.js
+
+# or intall videoconferencing-client
+npm install videoconferencing-client
+node ./node_modules/videoconferencing-client/server.js
 ```
 
 Now open localhost port:`8080`.
 
-# 1st Step: Node.js Server
+# 1st Step: Node.js Server-side code
 
 To use it in your node.js code: (required)
 
@@ -48,24 +53,32 @@ To use it in your node.js code: (required)
 var httpServer = require('http').createServer(callback);
 
 require('reliable-signaler')(httpServer || expressServer || portNumber, {
-    // RTCMultiConnection.js clients
-    path: '/reliable-signaler/rtcmulticonnection-signaler.js',
-    
-    // DataChannel.js clients
-    path: '/reliable-signaler/datachannel-signaler.js'
+    // for custom socket handlers
+    socketCallback: function(socket) {
+        socket.on('custom-handler', function(message) {
+            socket.broadcast.emit('custom-handler', message);
+        });
+    }
 });
 ```
+
+Constructor of the module `reliable-signaler` takes an `config` object where you can pass `socketCallback` and other configurations:
+
+```javascript
+var config = {
+    socketCallback: function(socket) {}
+};
+require('reliable-signaler')(httpServer, config);
+```
+
+*. `socketCallback`: If you want to attach custom handlers over socket object.
 
 # 2nd Step: Browser-side code
 
 To use it in the browser: (required)
 
 ```htm
-<!-- RTCMultiConnection.js clients -->
-<script src="/reliable-signaler/rtcmulticonnection-signaler.js"></script>
-
-<!-- DataChannel.js clients -->
-<script src="/reliable-signaler/datachannel-signaler.js"></script>
+<script src="/reliable-signaler/signaler.js"></script>
 ```
 
 And your client-side javascript code:
@@ -141,7 +154,7 @@ signaler.getRoomFromServer('sessioin-id', function(roomid) {
 # Complete Client-Side Example for RTCMultiConnection
 
 ```html
-<script src="/reliable-signaler/rtcmulticonnection-signaler.js"></script>
+<script src="/reliable-signaler/signaler.js"></script>
 <script>
 var connection = new RTCMultiConnection();
 
@@ -173,7 +186,7 @@ btnJoinRoom.onclick = function() {
 # Complete Client-Side Example for DataChannel
 
 ```html
-<script src="/reliable-signaler/datachannel-signaler.js"></script>
+<script src="/reliable-signaler/signaler.js"></script>
 <script>
 var channel = new DataChannel();
 

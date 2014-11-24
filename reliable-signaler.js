@@ -4,7 +4,7 @@
 
 exports.ReliableSignaler = ReliableSignaler;
 
-function ReliableSignaler(app) {
+function ReliableSignaler(app, socketCallback) {
     var io = require('socket.io').listen(app, {
         log: false,
         origins: '*:*'
@@ -50,5 +50,9 @@ function ReliableSignaler(app) {
 
             currentUser = null;
         });
+        
+        if(socketCallback) {
+            socketCallback(socket);
+        }
     });
 }

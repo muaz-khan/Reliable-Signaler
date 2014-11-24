@@ -22,7 +22,7 @@ Now open localhost port:`8080`.
 # How to use?
 
 1. In your Node.js server, invoke `require('reliable-signaler')` and pass HTTP-Server object.
-2. In your HTML file, link this script: `/reliable-signaler/rtcmulticonnection-signaler.js`
+2. In your HTML file, link this script: `/reliable-signaler/signaler.js`
 3. In your `<script>` tag, invoke `initReliableSignaler` constructor.
 4. Invoke `createNewRoomOnServer` method for room-moderator.
 5. Invoke `getRoomFromServer` method from room-participants (multiple participants).

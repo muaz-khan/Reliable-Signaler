@@ -1,8 +1,7 @@
 // Note: Code in this file is taken from socket.io github repository
 // It is added merely to provide direct access of this script:
 
-// <script src="/reliable-signaler/rtcmulticonnection-signaler.js"></script>
-// <script src="/reliable-signaler/datachannel-signaler.js"></script>
+// <script src="/reliable-signaler/signaler.js"></script>
 
 // Remember, there is a separate file named as "reliable-signaler.js"
 // which handles socket.io signaling part.
@@ -14,12 +13,6 @@ var url = require('url');
 
 module.exports = Server;
 
-Server.prototype.path = function(v) {
-    if (!arguments.length) return this._path;
-    this._path = v.replace(/\/$/, '');
-    return this;
-};
-
 function Server(srv, opts) {
     if (!(this instanceof Server)) return new Server(srv, opts);
     if ('object' == typeof srv && !srv.listen) {
@@ -29,11 +22,17 @@ function Server(srv, opts) {
     //console.log(opts);
     opts = opts || {};
     this.nsps = {};
-    this.path(opts.path || '/reliable-signaler/rtcmulticonnection-signaler.js');
+    this.path(opts.path || '/reliable-signaler/signaler.js');
     this.serveClient(false !== opts.serveClient);
     this.origins(opts.origins || '*:*');
     if (srv) this.attach(srv, opts);
 }
+
+Server.prototype.path = function(v) {
+    if (!arguments.length) return this._path;
+    this._path = v.replace(/\/$/, '');
+    return this;
+};
 
 Server.prototype.checkRequest = function(req, fn) {
     var origin = req.headers.origin || req.headers.referer;
@@ -131,8 +130,8 @@ Server.prototype.listen =
 
         // Export http server
         this.httpServer = srv;
-
-        require('./reliable-signaler.js').ReliableSignaler(srv);
+        
+        require('./reliable-signaler.js').ReliableSignaler(srv, opts.socketCallback || function() {});
 
         return this;
     };
